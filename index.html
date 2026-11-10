@@ -744,9 +744,303 @@ linear-gradient(90deg,#4f8a47,#8aa889 40%,#c9d3cf 60%,#6f9a60)}
   .hero{height:340px}
   .copy{top:36px}
 }
+/* ===== 「学校を知る」ボタン：シンプル ===== */
+.btn{
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+  padding:11px 32px;
+  font-size:14px;
+  font-weight:700;
+  letter-spacing:.1em;
+  color:#fff;
+  background:#2e8b57;
+  border:0;
+  border-radius:4px;
+  box-shadow:none;
+  text-shadow:none;
+  transition:background .25s;
+}
+.btn .arrow{margin-left:0;transition:transform .25s}
+.btn:hover{
+  background:#1e6b47;
+  transform:none;
+  box-shadow:none;
+  gap:10px;
+}
+.btn:hover .arrow{transform:translateX(4px) rotate(45deg)}
+/* ===== 「学校を知る」ボタン：薄い緑 ===== */
+.btn{
+  background:#7fc29a;
+  color:#fff;
+}
+.btn:hover{
+  background:#5fae7f;
+}
+.btn{
+  background:#a8d8b9;
+  color:#14432c;
+}
+.btn:hover{
+  background:#8cc8a4;
+}
+/* ===== ローディング：苗木 → 緑のワイプ ===== */
+#loader{
+  position:fixed;inset:0;z-index:9999;
+  display:grid;place-items:center;
+  background:#f3f3f3;
+  overflow:hidden;
+}
+.ld-center{text-align:center;transition:opacity .3s}
+
+/* 苗木の線画 */
+.ld-sprout{width:84px;height:105px;overflow:visible;animation:ld-bob 2.2s 1.6s ease-in-out infinite;transform-origin:50% 100%}
+.ld-line{
+  fill:none;stroke:#111;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;
+  stroke-dasharray:1;stroke-dashoffset:1;
+  animation:ld-draw 1.2s ease-out forwards;
+}
+.ld-line:nth-child(2){animation-delay:.15s}
+.ld-line:nth-child(3){animation-delay:.3s}
+.ld-accent{
+  fill:#2e8b57;opacity:0;
+  transform-box:fill-box;transform-origin:50% 100%;
+  animation:ld-sprout .7s 1.2s cubic-bezier(.3,1.6,.5,1) forwards;
+}
+
+/* LOADING ... */
+.ld-text{
+  margin:14px 0 0;font-size:11px;font-weight:700;letter-spacing:.2em;color:#111;
+  opacity:0;animation:ld-fadein .6s 1s ease forwards;
+}
+.ld-text span{opacity:.2;animation:ld-dot 1.2s infinite}
+.ld-text span:nth-child(2){animation-delay:.2s}
+.ld-text span:nth-child(3){animation-delay:.4s}
+
+/* 緑のパネル（ワイプ用） */
+.ld-panel{
+  position:absolute;inset:0;background:#2e8b57;
+  transform:translateX(-101%);
+}
+#loader.wipe-in .ld-panel{
+  transform:none;transition:transform .7s cubic-bezier(.77,0,.18,1);
+}
+#loader.wipe-out{background:transparent}
+#loader.wipe-out .ld-center{opacity:0}
+#loader.wipe-out .ld-panel{
+  transform:translateX(101%);transition:transform .7s cubic-bezier(.77,0,.18,1);
+}
+
+@keyframes ld-draw{to{stroke-dashoffset:0}}
+@keyframes ld-sprout{from{opacity:0;transform:scale(0)}to{opacity:1;transform:scale(1)}}
+@keyframes ld-fadein{to{opacity:1}}
+@keyframes ld-dot{0%,100%{opacity:.2}50%{opacity:1}}
+@keyframes ld-bob{0%,100%{transform:rotate(-2deg)}50%{transform:rotate(2deg)}}
+
+body.loading{overflow:hidden}
+body.loading .hero *{animation-play-state:paused}
+
+/* 動きを減らす設定：静止画で表示 */
+@media(prefers-reduced-motion:reduce){
+  .ld-line{stroke-dashoffset:0}
+  .ld-accent,.ld-text{opacity:1}
+}
+/* ===== 校章・校名の追加 ===== */
+.ld-stage{position:relative;width:96px;height:106px;margin:0 auto}
+.ld-sp{
+  position:absolute;left:6px;top:0;
+  animation:ld-out .5s 1.9s ease forwards;      /* 苗木が消える */
+}
+.ld-emblem{
+  position:absolute;left:0;top:4px;width:96px;height:96px;object-fit:contain;
+  opacity:0;transform:scale(.85);
+  animation:ld-emblem .8s 2s cubic-bezier(.2,.8,.2,1) forwards;   /* 校章が現れる */
+}
+.ld-name{
+  margin:16px 0 0;
+  font-family:"Noto Serif JP",serif;font-weight:600;
+  font-size:clamp(17px,2vw,22px);letter-spacing:.12em;color:#14432c;
+  opacity:0;animation:ld-fadein .8s 2.3s ease forwards;           /* 校名 */
+}
+.ld-text{margin-top:10px}
+
+@keyframes ld-out{to{opacity:0;transform:scale(.8)}}
+@keyframes ld-emblem{to{opacity:1;transform:none}}
+
+/* 動きを減らす設定：校章と校名を静止表示 */
+@media(prefers-reduced-motion:reduce){
+  .ld-sp{display:none}
+  .ld-emblem,.ld-name{opacity:1;transform:none}
+}
+/* ===== 位置の微調整 ===== */
+
+/* 校章の枠を校章と同じ大きさに（余分な余白を解消） */
+.ld-stage{width:96px;height:96px;margin:0 auto}
+.ld-emblem{left:0;top:0;width:96px;height:96px}
+
+/* 苗木も同じ枠にぴったり収める */
+.ld-sp{left:0;top:0;width:96px;height:96px;display:grid;place-items:center}
+.ld-sprout{width:77px;height:96px}
+
+/* 間隔：校章 → 校名 → LOADING */
+.ld-name{margin:14px 0 0;padding-left:.12em}      /* 字間の末尾ぶんを補正 */
+.ld-text{margin:8px 0 0;padding-left:.2em}
+
+/* 全体を少し上に（視覚的な中央に見せる） */
+/* 全体を画面の正中央に */
+.ld-center{transform:none}
+/* 苗木を校章と同じ枠の正中央に置く */
+.ld-sp{
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.ld-sprout{
+  width:auto;
+  height:88px;            /* 校章(96px)より少し小さめ */
+  aspect-ratio:80/100;
+  display:block;
+  transform-origin:50% 100%;
+}
+/* LOADINGの文字を中央に、...は右にはみ出させる */
+.ld-text{
+  padding-left:0;          /* 以前の補正を解除 */
+  letter-spacing:.2em;
+  text-indent:.2em;        /* 末尾の字間ぶんを補正 */
+}
+.ld-text span{
+  position:absolute;       /* ...を中央揃えの計算から外す */
+}
+.ld-text span:nth-child(1){margin-left:0}
+.ld-text span:nth-child(2){margin-left:.6em}
+.ld-text span:nth-child(3){margin-left:1.2em}
+body:not(.loading) > header{
+  animation:hd-in .6s .3s cubic-bezier(.2,.8,.2,1) backwards;
+}
+body:not(.loading) > nav{
+  animation:hd-in .6s .4s cubic-bezier(.2,.8,.2,1) backwards;
+}
+body:not(.loading) .notice{
+  animation:nt-in .6s .8s cubic-bezier(.2,.8,.2,1) backwards;
+}
+.copy h1 span b{animation-delay:.4s}
+.copy h1 span:nth-child(2) b{animation-delay:.5s}
+.copy h1 span:nth-child(3) b{animation-delay:.6s}
+.copy p{animation-delay:.8s}
+.btn{animation-delay:1s}
+@keyframes hd-in{
+  from{opacity:0;transform:translateY(-100%)}
+  to{opacity:1;transform:none}
+}
+/* ===== スマホ改善 ===== */
+.nav-toggle,.nav-sp{display:none}
+body{min-height:100dvh}
+
+@media(max-width:1000px){
+  /* ヘッダー：検索ボタンは残し、リンクだけ隠す */
+  header{height:60px;padding:0 14px}
+  .logo{font-size:17px;gap:8px}
+  .logo img{width:42px;height:42px}
+  .sub{display:flex}
+  .sub a{display:none}
+  .search{width:40px;height:40px}
+
+  /* ナビ：ハンバーガー式 */
+  nav{display:block;height:auto;overflow:visible;background:#2e8b57}
+  nav.open{max-height:100dvh;overflow-y:auto}
+  .nav-toggle{display:flex;align-items:center;justify-content:space-between;width:100%;height:46px;padding:0 16px;background:none;border:0;color:#fff;font:inherit;font-size:15px;font-weight:700;cursor:pointer}
+  .nav-toggle::after{content:"＋"}
+  nav.open .nav-toggle::after{content:"－"}
+  nav > a,nav > .nav-dropdown{display:none}
+  nav.open > a{display:flex}
+  nav.open > .nav-dropdown{display:block}
+  nav.open .nav-sp{display:flex}
+  nav a{min-height:48px;padding:0 16px;border-top:1px solid rgba(255,255,255,.25)}
+  nav a+a::before,nav a::after{display:none}
+  /* サブメニューは常に展開して字下げ */
+  nav .nav-dropdown-menu{display:block;position:static;min-width:0;background:rgba(0,0,0,.12);box-shadow:none}
+  nav .nav-dropdown-menu a{padding:0 16px 0 36px;display:flex;align-items:center}
+
+  /* ヒーロー */
+  .hero{height:380px}
+  .hero::after{background:linear-gradient(180deg,rgba(0,0,0,.15),rgba(0,0,0,.5))}
+  .copy{left:20px;right:20px;top:32px}
+  .copy h1{font-size:28px}
+  .copy p{font-size:13px;line-height:1.7}
+
+  /* 重要なお知らせ */
+  .notice{height:auto;min-height:40px}
+  .notice .tag{padding:0 26px 0 12px;font-size:12px;white-space:nowrap;min-height:40px}
+  .notice .tag svg{width:18px;height:16px}
+  .notice .msg{font-size:12px;padding:0 10px}
+
+  /* お知らせ・行事パネル */
+  .panel header{background:var(--green)}
+  .panel li{flex-direction:column;gap:0;padding:10px 16px}
+  .panel li time,.ev li time{width:auto}
+  .panel li:hover{padding-left:16px}
+
+  /* セクション見出し・カード */
+  .ttl{flex-wrap:wrap;gap:4px 10px}
+  .ttl h3{font-size:20px}
+  .ttl hr{display:none}
+  .ttl a{margin-left:auto}
+  .card .cap{font-size:12px;padding:0 8px}
+  .card .cap .arrow{display:none}
+  .about{grid-template-columns:1fr}
+
+  /* サブページ */
+  .pt{font-size:22px}
+  #page .kosho-area,#page .nakaniwa-area{flex-direction:column}
+  #page .kosho-area img{width:140px;margin:0 auto}
+  #page .nakaniwa-area img{width:100%;max-width:320px}
+  #page .student-table{font-size:14px}
+  #page .student-table th,#page .student-table td{padding:6px 2px}
+  #page .pdf-table{font-size:14px}
+  #page .pdf-table td:last-child:not(:first-child),
+  #page .pdf-table th:last-child:not(:first-child){width:88px;font-size:12px}
+  #ev .list time{width:auto}
+  .tabs button{padding:10px 16px}
+  form.f input,form.f select,form.f textarea{font-size:16px}
+  .ov{padding:8vh 12px 0}
+
+  /* フッター */
+  footer{flex-direction:column;align-items:flex-start;gap:12px;background:#2e8b57;padding:20px 16px calc(20px + env(safe-area-inset-bottom,0px))}
+  footer .fl{font-size:18px;height:auto;padding:0;border:0;white-space:normal}
+  footer .fl img{width:44px;height:44px}
+  footer .links{flex-wrap:wrap;gap:6px 0}
+  footer .top{align-self:flex-end;margin:0}
+}
+
+@media(max-width:600px){
+  .quick{grid-template-columns:1fr}
+  .quick a{height:52px}
+}
 </style>
 </head>
 <body>
+<body class="loading">
+
+<div id="loader" role="status" aria-label="読み込み中">
+  <div class="ld-center">
+    <div class="ld-stage">
+      <div class="ld-sp">
+        <svg class="ld-sprout" viewBox="0 0 80 100" aria-hidden="true">
+          <path class="ld-line" pathLength="1" d="M8 93 Q40 86 72 93"/>
+          <path class="ld-line" pathLength="1" d="M40 93 V80"/>
+          <path class="ld-line" pathLength="1" d="M40 16 L51 38 L45 36 L57 60 L50 58 L63 82 L17 82 L30 58 L23 60 L35 36 L29 38 Z"/>
+          <path class="ld-accent" d="M40 4 C46 9 46 17 40 21 C34 17 34 9 40 4 Z"/>
+        </svg>
+      </div>
+      <img class="ld-emblem" src="logo.png" alt="校章">
+    </div>
+    <p class="ld-name">名古屋市立高杉中学校</p>
+    <p class="ld-text">LOADING<span>.</span><span>.</span><span>.</span></p>
+  </div>
+  <div class="ld-panel"></div>
+</div><noscript><style>#loader{display:none!important}</style></noscript>
 <svg width="0" height="0" style="position:absolute"><defs>
 <symbol id="lg" viewBox="0 0 76 50"><g fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 30c12-2 24 0 34 8 10-8 22-10 34-8v14c-12-2-24 0-34 6-10-6-22-8-34-6z"/><path d="M38 38V20"/></g><path d="M38 20c-2-9-9-12-16-11 1 8 7 12 16 11zM38 20c2-9 9-14 17-12-1 9-8 13-17 12z" fill="#2e9b62"/></symbol>
 </defs></svg>
@@ -759,6 +1053,7 @@ linear-gradient(90deg,#4f8a47,#8aa889 40%,#c9d3cf 60%,#6f9a60)}
   <button class="search" aria-label="検索"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#fff" stroke-width="2"><circle cx="7" cy="7" r="5"/><path d="M11 11l4 4"/></svg></button></div>
 </header>
 <nav>
+  <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-list">メニュー</button>
   <a class="on" href="#home">トップページ</a>
   <div class="nav-dropdown">
     <a href="#" onclick="return false;">学校案内</a>
@@ -783,17 +1078,20 @@ linear-gradient(90deg,#4f8a47,#8aa889 40%,#c9d3cf 60%,#6f9a60)}
     <a href="#club">部活動</a>
   </div>
 </div>  <a href="#bullying">いじめ防止基本方針</a>
-<div class="nav-dropdown">
 
-<div class="nav-dropdown">
-  <a href="#news">お知らせ</a>
-  <div class="nav-dropdown-menu">
+
+  <!-- ↓ 余分な <div class="nav-dropdown"> を削除 -->
+  <div class="nav-dropdown">
     <a href="#news">お知らせ</a>
-    <a href="#emergency">緊急時の対応</a>
+    <div class="nav-dropdown-menu">
+      <a href="#news">お知らせ</a>
+      <a href="#emergency">緊急時の対応</a>
+    </div>
   </div>
-</div>
-</nav>
 
+  <a class="nav-sp" href="#access">アクセス</a>
+  <a class="nav-sp" href="#contact">お問い合わせ</a>
+</nav>
 <div id="home"><section class="hero">
   <div class="scene"><div class="bld"></div></div>
   <div class="stu s1"><i class="b"></i><i class="h"></i></div><div class="stu s2"><i class="b"></i><i class="h"></i></div><div class="stu s3"><i class="b"></i><i class="h"></i></div><div class="stu s4"><i class="b"></i><i class="h"></i></div>
@@ -1092,6 +1390,29 @@ $('.search').onclick=function(){ov.classList.add('show');q.value='';res.innerHTM
 ov.onclick=function(e){if(e.target==ov||e.target.tagName=='A')close()};
 addEventListener('keydown',function(e){if(e.key=='Escape')close()});
 addEventListener('hashchange',go);go();
+})();
+</script>
+<script>
+(function(){
+  var b=document.body,l=document.getElementById('loader');
+  if(!l)return;
+  var seen=false;
+  try{seen=sessionStorage.getItem('ld')==='1';sessionStorage.setItem('ld','1')}catch(e){}
+  if(seen){l.remove();b.classList.remove('loading');return}   /* 2回目以降は省略 */
+
+var start=Date.now(),done=false,MIN=4200;   /* 2800 → 4200 */  function hide(){
+    if(done)return;done=true;
+    setTimeout(function(){
+      l.classList.add('wipe-in');                       /* 緑が左から覆う */
+      setTimeout(function(){
+        l.classList.add('wipe-out');                    /* 右へ抜けてサイトが現れる */
+        b.classList.remove('loading');
+        setTimeout(function(){l.remove()},800);
+      },750);
+    },Math.max(0,MIN-(Date.now()-start)));
+  }
+  window.addEventListener('load',hide);
+  setTimeout(hide,6000);   /* 保険：6秒で必ず進める */
 })();
 </script>
 </body>
