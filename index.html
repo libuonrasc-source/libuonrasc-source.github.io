@@ -1018,9 +1018,275 @@ body{min-height:100dvh}
   .quick{grid-template-columns:1fr}
   .quick a{height:52px}
 }
+
+/* ===== スマホ表示の最終調整 ===== */
+
+@media (max-width: 600px) {
+
+  body {
+    font-size: 14px;
+    overflow-x: hidden;
+  }
+
+  /* ヘッダー */
+  header {
+    height: 58px;
+    padding: 0 12px;
+  }
+
+  .logo {
+    font-size: 15px;
+    gap: 6px;
+    letter-spacing: 0;
+  }
+
+  .logo img {
+    width: 38px;
+    height: 38px;
+  }
+
+  .search {
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+  }
+
+  /* ナビゲーション */
+  nav {
+    width: 100%;
+  }
+
+  nav.open {
+    max-height: 85dvh;
+    overflow-y: auto;
+  }
+
+  nav.open > a,
+  nav.open > .nav-dropdown {
+    display: block;
+  }
+
+  nav .nav-dropdown > a {
+    display: flex;
+    align-items: center;
+    min-height: 48px;
+  }
+
+  nav .nav-dropdown-menu a {
+    min-height: 44px;
+  }
+
+  /* メイン画像 */
+  .hero {
+    height: 350px;
+  }
+
+  .scene {
+    background-position: center;
+  }
+
+  .copy {
+    left: 18px;
+    right: 18px;
+    top: 32px;
+  }
+
+  .copy h1 {
+    font-size: clamp(25px, 7vw, 32px);
+    line-height: 1.55;
+  }
+
+  .copy p {
+    font-size: 12px;
+    line-height: 1.8;
+    margin-top: 12px;
+  }
+
+  .btn {
+    padding: 10px 22px;
+    font-size: 13px;
+  }
+
+  /* コンテンツ */
+  .wrap {
+    width: calc(100% - 24px);
+  }
+
+  .panels {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .panel li {
+    padding: 11px 12px;
+    font-size: 13px;
+  }
+
+  .panel li time {
+    font-size: 12px;
+  }
+
+  /* 学校生活カード */
+  .sec {
+    display: block;
+  }
+
+  .sec > div:first-child {
+    padding: 0 0 22px;
+    border: 0;
+  }
+
+  .sec > div:last-child {
+    padding: 0;
+  }
+
+  .cards {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .card {
+    height: 180px;
+  }
+
+  .about {
+    grid-template-columns: 1fr;
+  }
+
+  .about .ph {
+    height: 180px;
+  }
+
+  /* クイックリンク */
+  .quick {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .quick a {
+    height: 50px;
+  }
+
+  /* ページタイトル */
+  .pt {
+    font-size: 22px;
+    line-height: 1.6;
+  }
+
+  #page p {
+    max-width: 100%;
+  }
+
+  /* 学校紹介の写真 */
+  #page .kosho-area,
+  #page .nakaniwa-area {
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  #page .kosho-area img,
+  #page .nakaniwa-area img {
+    width: 100%;
+    max-width: 300px;
+    margin: 0 auto;
+  }
+
+  /* 表 */
+  #page .student-table {
+    width: 100%;
+    font-size: 12px;
+  }
+
+  #page .student-table th,
+  #page .student-table td {
+    padding: 7px 2px;
+    white-space: normal;
+  }
+
+  #page .pdf-table {
+    width: 100%;
+    font-size: 12px;
+  }
+
+  #page .pdf-table td {
+    padding: 11px 7px;
+    overflow-wrap: anywhere;
+  }
+
+  /* 学校生活写真 */
+  #page .life-gallery {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  #page .life-gallery img {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+  }
+
+  /* お知らせ */
+  .nw-grid {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .nw-table {
+    font-size: 12px;
+  }
+
+  .nw-date {
+    width: 90px;
+    font-size: 11px;
+  }
+
+  /* フッター */
+  footer {
+    width: 100%;
+    padding: 22px 16px;
+    gap: 14px;
+  }
+
+  footer address {
+    font-size: 12px;
+  }
+
+  footer .links {
+    line-height: 2.5;
+  }
+
+  footer .top {
+    align-self: flex-end;
+  }
+
+  /* 検索画面 */
+  .ov {
+    padding: 8vh 12px 0;
+  }
+
+  .sbox {
+    width: 100%;
+    padding: 14px;
+  }
+
+  .sbox input {
+    font-size: 16px;
+  }
+
+  /* 横スクロール防止 */
+  img,
+  table {
+    max-width: 100%;
+  }
+
+  .mapb {
+    width: 100%;
+  }
+}
+
 </style>
 </head>
-<body>
 <body class="loading">
 
 <div id="loader" role="status" aria-label="読み込み中">
