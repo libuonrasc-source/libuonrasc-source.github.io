@@ -1284,7 +1284,16 @@ body{min-height:100dvh}
     width: 100%;
   }
 }
+@media (max-width: 768px) {
+    nav ul {
+        display: none;
+    }
 
+    nav.open ul {
+        display: flex;
+        flex-direction: column;
+    }
+}
 </style>
 </head>
 <body class="loading">
@@ -1319,8 +1328,11 @@ body{min-height:100dvh}
   <button class="search" aria-label="検索"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#fff" stroke-width="2"><circle cx="7" cy="7" r="5"/><path d="M11 11l4 4"/></svg></button></div>
 </header>
 <nav>
-  <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-list">メニュー</button>
-  <a class="on" href="#home">トップページ</a>
+<button class="nav-toggle"
+        aria-label="メニューを開く"
+        aria-expanded="false">
+    
+</button>  <a class="on" href="#home">トップページ</a>
   <div class="nav-dropdown">
     <a href="#" onclick="return false;">学校案内</a>
     <div class="nav-dropdown-menu">
@@ -1680,6 +1692,21 @@ var start=Date.now(),done=false,MIN=4200;   /* 2800 → 4200 */  function hide()
   window.addEventListener('load',hide);
   setTimeout(hide,6000);   /* 保険：6秒で必ず進める */
 })();
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const nav = document.querySelector("nav");
+    const menuButton = document.querySelector(".nav-toggle");
+
+    if (!nav || !menuButton) return;
+
+    menuButton.addEventListener("click", function () {
+        nav.classList.toggle("open");
+
+        const isOpen = nav.classList.contains("open");
+        menuButton.setAttribute("aria-expanded", isOpen);
+    });
+});
 </script>
 </body>
 </html>
