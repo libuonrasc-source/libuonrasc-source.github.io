@@ -1,6 +1,40 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
+<script id="loader-skip-internal">
+/* サイト内の移動ではローディングを出さない（検索エンジン・外部サイト・直接アクセスでは表示） */
+(function(){
+  var KEY='takasugi_internal_nav';
+  /* 1) どのページでも：サイト内リンクをクリックしたら記録する */
+  try{
+    document.addEventListener('click',function(e){
+      var a=e.target&&e.target.closest?e.target.closest('a[href]'):null;
+      if(!a||a.target==='_blank'||a.hasAttribute('download'))return;
+      var h=a.getAttribute('href')||'';
+      if(!h||h.charAt(0)==='#'||/^(mailto|tel|javascript):/i.test(h))return;
+      if(a.protocol===location.protocol&&a.host===location.host){
+        sessionStorage.setItem(KEY,String(Date.now()));
+      }
+    },true);
+  }catch(e){}
+  /* 2) このページを開いたとき：サイト内から来たか判定する */
+  var internal=false;
+  try{
+    var t=parseInt(sessionStorage.getItem(KEY)||'0',10);
+    sessionStorage.removeItem(KEY);
+    if(t&&Date.now()-t<15000)internal=true;       /* リンクをクリックして移動してきた */
+  }catch(e){}
+  try{
+    var r=document.referrer;
+    if(r&&new URL(r).host===location.host&&new URL(r).protocol===location.protocol)internal=true;  /* 移動元が同じサイト */
+  }catch(e){}
+  var de=document.documentElement;
+  if(internal){de.classList.add('loader-skip');}
+  else{de.classList.add('hdr-wait');setTimeout(function(){de.classList.remove('hdr-wait');},12000);}   /* 念のための解除 */
+})();
+</script>
+<style id="loader-skip-style">html.loader-skip #loader{display:none!important}html.loader-skip body.loading{overflow:auto!important}</style>
+
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>名古屋市立高杉中学校</title>
@@ -784,60 +818,22 @@ linear-gradient(90deg,#4f8a47,#8aa889 40%,#c9d3cf 60%,#6f9a60)}
 .btn:hover{
   background:#8cc8a4;
 }
-/* ===== ローディング：苗木 → 緑のワイプ ===== */
-#loader{
-  position:fixed;inset:0;z-index:9999;
-  display:grid;place-items:center;
-  background:#f3f3f3;
-  overflow:hidden;
-}
-.ld-center{text-align:center;transition:opacity .3s}
-
-/* 苗木の線画 */
-.ld-sprout{width:84px;height:105px;overflow:visible;animation:ld-bob 2.2s 1.6s ease-in-out infinite;transform-origin:50% 100%}
-.ld-line{
-  fill:none;stroke:#111;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;
-  stroke-dasharray:1;stroke-dashoffset:1;
-  animation:ld-draw 1.2s ease-out forwards;
-}
-.ld-line:nth-child(2){animation-delay:.15s}
-.ld-line:nth-child(3){animation-delay:.3s}
-.ld-accent{
-  fill:#2e8b57;opacity:0;
-  transform-box:fill-box;transform-origin:50% 100%;
-  animation:ld-sprout .7s 1.2s cubic-bezier(.3,1.6,.5,1) forwards;
-}
-
-/* LOADING ... */
-.ld-text{
-  margin:14px 0 0;font-size:11px;font-weight:700;letter-spacing:.2em;color:#111;
-  opacity:0;animation:ld-fadein .6s 1s ease forwards;
-}
-.ld-text span{opacity:.2;animation:ld-dot 1.2s infinite}
-.ld-text span:nth-child(2){animation-delay:.2s}
-.ld-text span:nth-child(3){animation-delay:.4s}
-
-/* 緑のパネル（ワイプ用） */
-.ld-panel{
-  position:absolute;inset:0;background:#2e8b57;
-  transform:translateX(-101%);
-}
-#loader.wipe-in .ld-panel{
-  transform:none;transition:transform .7s cubic-bezier(.77,0,.18,1);
-}
-#loader.wipe-out{background:transparent}
-#loader.wipe-out .ld-center{opacity:0}
-#loader.wipe-out .ld-panel{
-  transform:translateX(101%);transition:transform .7s cubic-bezier(.77,0,.18,1);
-}
-
-@keyframes ld-draw{to{stroke-dashoffset:0}}
-@keyframes ld-sprout{from{opacity:0;transform:scale(0)}to{opacity:1;transform:scale(1)}}
-@keyframes ld-fadein{to{opacity:1}}
-@keyframes ld-dot{0%,100%{opacity:.2}50%{opacity:1}}
-@keyframes ld-bob{0%,100%{transform:rotate(-2deg)}50%{transform:rotate(2deg)}}
-
+/* ===== 軽量ローディングアニメーション ===== */
+#loader{position:fixed;inset:0;z-index:9999;display:grid;place-items:center;background:#f3f3f3;overflow:hidden;isolation:isolate;contain:paint}
+.ld-center{text-align:center;position:relative;z-index:1;will-change:opacity;transition:opacity .22s ease}
+.ld-sprout{width:84px;height:105px;overflow:visible;transform-origin:50% 100%;animation:none;will-change:auto}
+.ld-line{fill:none;stroke:#111;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:1;stroke-dashoffset:1;animation:ld-draw 1s ease-out forwards}
+.ld-line:nth-child(2){animation-delay:.12s}.ld-line:nth-child(3){animation-delay:.24s}
+.ld-accent{fill:#2e8b57;opacity:0;transform-box:fill-box;transform-origin:50% 100%;animation:ld-sprout .55s .95s cubic-bezier(.3,1.3,.5,1) forwards}
+.ld-text{margin:14px 0 0;font-size:11px;font-weight:700;letter-spacing:.2em;color:#111;opacity:0;animation:ld-fadein .45s .8s ease forwards}
+.ld-text span{opacity:.45;animation:none}.ld-text span:nth-child(2){animation-delay:.18s}.ld-text span:nth-child(3){animation-delay:.36s}
+.ld-panel{position:absolute;inset:0;background:#2e8b57;transform:translate3d(-101%,0,0);backface-visibility:hidden;will-change:transform}
+#loader.wipe-in .ld-panel{transform:translate3d(0,0,0);transition:transform .62s cubic-bezier(.65,0,.35,1)}
+#loader.wipe-out{background:transparent}#loader.wipe-out .ld-center{opacity:0}
+#loader.wipe-out .ld-panel{transform:translate3d(101%,0,0);transition:transform .62s cubic-bezier(.65,0,.35,1)}
+@keyframes ld-draw{to{stroke-dashoffset:0}}@keyframes ld-sprout{from{opacity:0;transform:scale(.65)}to{opacity:1;transform:scale(1)}}@keyframes ld-fadein{to{opacity:1}}@keyframes ld-dot{0%,100%{opacity:.2}50%{opacity:1}}@keyframes ld-bob{0%,100%{transform:rotate(0)}50%{transform:rotate(2deg)}}
 body.loading{overflow:hidden}
+@media(prefers-reduced-motion:reduce){.ld-sprout,.ld-line,.ld-accent,.ld-text,.ld-text span{animation:none!important;opacity:1!important;stroke-dashoffset:0!important}#loader .ld-panel{transition:none!important}}
 body.loading .hero *{animation-play-state:paused}
 
 /* 動きを減らす設定：静止画で表示 */
@@ -917,7 +913,9 @@ body.loading .hero *{animation-play-state:paused}
 .ld-text span:nth-child(2){margin-left:.6em}
 .ld-text span:nth-child(3){margin-left:1.2em}
 body:not(.loading) > header{
-  animation:hd-in .6s .3s cubic-bezier(.2,.8,.2,1) backwards;
+  animation: none !important;
+  transform: none !important;
+  opacity: 1 !important;
 }
 body:not(.loading) > nav{
   animation:hd-in .6s .4s cubic-bezier(.2,.8,.2,1) backwards;
@@ -959,9 +957,13 @@ body{min-height:100dvh}
   nav.open .nav-sp{display:flex}
   nav a{min-height:48px;padding:0 16px;border-top:1px solid rgba(255,255,255,.25)}
   nav a+a::before,nav a::after{display:none}
-  /* サブメニューは常に展開して字下げ */
-  nav .nav-dropdown-menu{display:block;position:static;min-width:0;background:rgba(0,0,0,.12);box-shadow:none}
+  /* サブメニューは親項目をタップしたときだけ展開 */
+  nav .nav-dropdown{display:block}
+  nav .nav-dropdown-menu{display:none;position:static;min-width:0;background:rgba(0,0,0,.12);box-shadow:none}
+  nav .nav-dropdown.open .nav-dropdown-menu{display:block}
   nav .nav-dropdown-menu a{padding:0 16px 0 36px;display:flex;align-items:center}
+  nav .nav-dropdown > a::after{content:"＋";margin-left:auto;font-size:16px}
+  nav .nav-dropdown.open > a::after{content:"－"}
 
   /* ヒーロー */
   .hero{height:380px}
@@ -1294,9 +1296,895 @@ body{min-height:100dvh}
         flex-direction: column;
     }
 }
+/* 背景やボックスの影を消す */
+* {
+    box-shadow: none !important;
+    text-shadow: none !important;
+}
+/* 重要なお知らせの位置調整 */
+.important-notice {
+    position: relative;
+    top: 0;
+    width: calc(100% - 40px);
+    max-width: 1612px;
+    margin: 14px auto 24px;
+    z-index: 2;
+}
+
+/* スマホ対応 */
+@media (max-width: 768px) {
+    .important-notice {
+        width: calc(100% - 24px);
+        margin: 12px auto 18px;
+    }
+}
+/* 下部の4つのメニューボタン */
+.quick-links a {
+    background: #fff;
+    border: 1px solid #d5e2d9;
+    border-radius: 4px;
+    color: #176b49;
+    box-shadow: none;
+    transition: all 0.25s ease;
+}
+
+/* アイコン */
+.quick-links a i,
+.quick-links a svg {
+    color: #238457;
+}
+
+/* ホバー時 */
+.quick-links a:hover {
+    background: #176b49;
+    color: #fff;
+    border-color: #176b49;
+    transform: translateY(-2px);
+}
+
+/* ホバー時のアイコン */
+.quick-links a:hover i,
+.quick-links a:hover svg {
+    color: #fff;
+}
+
+/* スマホ */
+@media (max-width: 768px) {
+    .quick-links {
+        gap: 10px;
+    }
+
+    .quick-links a {
+        min-height: 60px;
+        font-size: 14px;
+        border-radius: 4px;
+    }
+}
+/* メニューボタン */
+.nav-toggle {
+    display: none;
+}
+
+@media (max-width: 768px) {
+
+    /* ヘッダー右上のメニュー */
+    .nav-toggle {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        background: none;
+        border: none;
+        color: #176b49;
+        cursor: pointer;
+        padding: 8px;
+    }
+
+    .nav-toggle span {
+        width: 25px;
+        height: 3px;
+        background: #176b49;
+        border-radius: 3px;
+    }
+
+    .nav-toggle b {
+        font-size: 11px;
+    }
+
+    /* メニューを閉じた状態 */
+    nav {
+        display: none;
+        flex-direction: column;
+        width: 100%;
+        background: #fff;
+        padding: 10px 16px;
+    }
+
+    /* メニューを開いた状態 */
+    nav.open {
+        display: flex;
+    }
+
+    nav > a,
+    nav .nav-dropdown > a {
+        display: block;
+        padding: 15px;
+        border-bottom: 1px solid #e2eae5;
+        color: #176b49;
+    }
+
+    nav .nav-dropdown {
+        width: 100%;
+    }
+
+    nav .nav-dropdown-menu {
+        display: block;
+        position: static;
+        padding-left: 15px;
+        box-shadow: none;
+    }
+
+    /* メニュー内の検索 */
+   
+/* スマホ・PC共通 */
+.nav-toggle {
+    display: none;
+}
+
+.mobile-search {
+    display: none;
+}
+
+/* スマホ版 */
+@media (max-width: 768px) {
+
+    header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    header .sub {
+        display: flex;
+        align-items: center;
+    }
+
+    header .sub > a {
+        display: none;
+    }
+
+    /* メニューボタン */
+    .nav-toggle {
+        display: flex !important;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        padding: 8px;
+        border: none;
+        background: transparent;
+        color: #176b49;
+        cursor: pointer;
+        flex-shrink: 0;
+    }
+
+    .nav-toggle span {
+        display: block;
+        width: 25px;
+        height: 3px;
+        background: #176b49;
+        border-radius: 3px;
+    }
+
+    .nav-toggle b {
+        font-size: 11px;
+    }
+
+    /* ナビゲーション */
+    nav {
+        display: none;
+        flex-direction: column;
+        width: 100%;
+    }
+
+    nav.open {
+        display: flex;
+    }
+
+    /* メニュー内の検索 */
+    .mobile-search {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        width: 100%;
+        padding: 15px;
+        background: #f2f7f3;
+        border: none;
+        color: #176b49;
+        font-size: 15px;
+        cursor: pointer;
+    }
+}
+
+/* PC版 */
+@media (min-width: 769px) {
+    .nav-toggle,
+    .mobile-search {
+        display: none;
+    }
+}
+
+/* スマホメニューの最終調整 */
+@media (max-width: 768px) {
+
+    /* 最初はメニューを閉じる */
+    nav:not(.open) {
+        display: none !important;
+    }
+
+    nav.open {
+        display: flex !important;
+        flex-direction: column;
+    }
+
+    /* ＋マークなど既存の装飾を消す */
+    .nav-toggle::before,
+    .nav-toggle::after {
+        content: none !important;
+        display: none !important;
+    }
+
+    /* ハンバーガーの3本線 */
+    .nav-toggle {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        width: 65px;
+        height: 55px;
+        padding: 5px;
+        background: transparent !important;
+        border: none !important;
+    }
+
+    .nav-toggle span {
+        display: block !important;
+        width: 25px !important;
+        height: 3px !important;
+        background: #176b49 !important;
+        border-radius: 3px;
+    }
+
+    .nav-toggle b {
+        display: block;
+        font-size: 11px;
+        color: #176b49;
+    }
+}
+@media (max-width: 768px) {
+    nav:not(.open) {
+        display: none !important;
+    }
+
+    nav.open {
+        display: flex !important;
+        flex-direction: column;
+    }
+}
+
+/* プルダウンメニューのデザイン */
+@media (max-width: 768px) {
+
+    nav .nav-dropdown-menu,
+    nav .nav-dropdown > div {
+        background: #edf6ef !important;
+        border: 1px solid #d5e7d9;
+        border-radius: 5px;
+        overflow: hidden;
+    }
+
+    nav .nav-dropdown-menu a,
+    nav .nav-dropdown > div a {
+        display: block;
+        background: transparent !important;
+        color: #176b49 !important;
+        padding: 17px 20px 17px 40px;
+        border-bottom: 1px solid #d5e7d9;
+        transition: background 0.2s, color 0.2s;
+    }
+
+    nav .nav-dropdown-menu a:last-child,
+    nav .nav-dropdown > div a:last-child {
+        border-bottom: none;
+    }
+
+    /* タップ・ホバー時 */
+    nav .nav-dropdown-menu a:hover,
+    nav .nav-dropdown > div a:hover {
+        background: #278456 !important;
+        color: #fff !important;
+    }
+}
+
+
+/* ===== スマホのプルダウン表示を最終制御 ===== */
+@media (max-width: 768px) {
+  nav:not(.open) {
+    display: none !important;
+  }
+  nav.open {
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  nav.open > .nav-dropdown {
+    display: block !important;
+    width: 100% !important;
+  }
+  nav .nav-dropdown-menu {
+    display: none !important;
+    position: static !important;
+    width: 100% !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: none !important;
+  }
+  nav .nav-dropdown.open > .nav-dropdown-menu {
+    display: block !important;
+  }
+  nav .nav-dropdown > a {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    width: 100% !important;
+    cursor: pointer;
+  }
+  nav .nav-dropdown-menu a {
+    display: flex !important;
+  }
+}
+
+/* スマホ用プルダウン矢印の位置修正 */
+@media screen and (max-width: 768px) {
+
+  nav .nav-dropdown > a {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    padding: 15px 20px 15px 15px !important;
+  }
+
+  /* 閉じているとき */
+  nav .nav-dropdown > a::after {
+    content: "▼" !important;
+    display: inline-block !important;
+    position: static !important;
+    margin-left: auto !important;
+    flex-shrink: 0 !important;
+    transform: none !important;
+    font-size: 13px !important;
+    color: #08734f !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+
+  /* 開いているとき */
+  nav .nav-dropdown.open > a::after {
+    content: "▲" !important;
+  }
+
+}
+
+/* スマホメニューをページの上に重ねて表示 */
+@media screen and (max-width: 768px) {
+
+  /* メニューを画面に固定 */
+  nav.open {
+    position: fixed !important;
+    top: 60px !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    height: calc(100dvh - 60px) !important;
+    max-height: calc(100dvh - 60px) !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    background: #ffffff !important;
+    z-index: 9998 !important;
+    box-sizing: border-box !important;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2) !important;
+    padding-bottom: 30px !important;
+  }
+
+body {
+  padding-top: 60px !important;
+}
+
+  /* メニュー内のプルダウン */
+  nav.open .nav-dropdown-menu {
+    position: static !important;
+    width: 100% !important;
+  }
+
+}
+
+
+/* ===== 最終修正：学校名のヘッダーを常時固定 ===== */
+@media screen and (max-width: 768px) {
+  body > header {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    height: 60px !important;
+    padding: 0 12px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    background: #fff !important;
+    z-index: 10000 !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: none !important;
+    animation: none !important;
+  }
+  body { padding-top: 60px !important; }
+  body > nav.open {
+    position: fixed !important;
+    top: 60px !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    height: calc(100dvh - 60px) !important;
+    max-height: calc(100dvh - 60px) !important;
+    overflow-y: auto !important;
+    z-index: 9999 !important;
+  }
+}
+
+
+/* アニメーション：校名ロゴ */
+@keyframes schoolNameIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+header .logo { animation: schoolNameIn .85s cubic-bezier(.2,.75,.25,1) both; }
+header .logo img { animation: schoolNameIn 1s ease-out both; }
+@media (prefers-reduced-motion: reduce) { header .logo, header .logo img { animation: none !important; } }
+
+.important-page{max-width:900px;margin:0 auto}.important-page .nw-card{margin:18px 0;border-left:5px solid var(--gold)}
+</style>
+
+<style id="mobile-school-life-section-background">
+/* スマホ版のみ：学校生活カード全体にミントグリーンの背景を付ける */
+@media screen and (max-width: 768px) {
+  .sec > div:first-child {
+    background: #e0f3ef !important;
+    padding: 48px 15px 30px !important;
+    margin: 28px -14px 30px !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    width: calc(100% + 28px) !important;
+    box-sizing: border-box !important;
+  }
+
+  .sec > div:first-child .cards,
+  .sec > div:first-child .ttl {
+    background: transparent !important;
+  }
+}
+</style>
+
+<style id="back-to-top-fix">
+/* トップへ戻るボタン：常に画面右下に固定 */
+footer .top, #back-to-top.top {
+  position: fixed !important;
+  right: max(20px, env(safe-area-inset-right)) !important;
+  bottom: max(20px, env(safe-area-inset-bottom)) !important;
+  z-index: 9999 !important;
+  width: 48px !important;
+  height: 48px !important;
+  margin: 0 !important;
+  border: 1px solid rgba(20,54,90,.18) !important;
+  border-radius: 50% !important;
+  background: #fff !important;
+  color: var(--navy) !important;
+  box-shadow: 0 4px 16px rgba(0,0,0,.20) !important;
+  display: grid !important;
+  place-items: center !important;
+  cursor: pointer !important;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(8px);
+  transition: opacity .2s ease, transform .2s ease, visibility .2s ease !important;
+}
+#back-to-top.top.is-visible {
+  opacity: 1; visibility: visible; pointer-events: auto; transform: translateY(0);
+}
+#back-to-top.top .arrow {
+  width: 12px; height: 12px; margin: 7px 0 0 !important;
+  border-top: 2px solid currentColor; border-right: 2px solid currentColor;
+  transform: rotate(-45deg) !important;
+}
+#back-to-top.top:focus-visible { outline: 3px solid #f2b824; outline-offset: 3px; }
+@media (max-width: 600px) {
+  #back-to-top.top { right: max(14px, env(safe-area-inset-right)) !important; bottom: max(14px, env(safe-area-inset-bottom)) !important; width: 46px !important; height: 46px !important; }
+}
+@media (prefers-reduced-motion: reduce) {
+  #back-to-top.top { transition: none !important; }
+}
+</style>
+
+
+<style id="mobile-colors-match-desktop">
+/* スマホ版の配色をPC版に統一（レイアウト・文字サイズは維持） */
+@media screen and (max-width: 1000px) {
+  nav { background: #8fbc8f !important; }
+  footer { background: #8fbc8f !important; }
+  .panel header { background: #98fb98 !important; }
+}
+@media screen and (max-width: 768px) {
+  .sec > div:first-child,
+  .school-life-background {
+    background: #eef7f0 !important;
+    border-color: #d3e6d8 !important;
+  }
+  .sec > div:first-child .cards,
+  .sec > div:first-child .ttl { background: transparent !important; }
+}
+</style>
+
+<style id="animation-correction">
+/* === 2026 animation correction === */
+@keyframes schoolBrandEnter {
+  0% { opacity: 0; transform: translateY(-18px) scale(.97); filter: blur(3px); }
+  70% { opacity: 1; filter: blur(0); }
+  100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+}
+header .logo {
+  transform-origin: left center;
+  animation: schoolBrandEnter 1.15s cubic-bezier(.2,.75,.25,1) both;
+}
+header .logo img { animation: schoolBrandEnter 1.15s cubic-bezier(.2,.75,.25,1) both; }
+@keyframes contactTitleEnter {
+  from { opacity: 0; transform: translateY(24px); clip-path: inset(0 0 100% 0); }
+  to { opacity: 1; transform: translateY(0); clip-path: inset(0 0 0 0); }
+}
+@keyframes contactItemEnter {
+  from { opacity: 0; transform: translateY(22px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+#page.contact-animate .pt { animation: contactTitleEnter .85s cubic-bezier(.2,.75,.25,1) both; }
+#page.contact-animate > p { animation: contactItemEnter .7s .15s both; }
+#page.contact-animate #cf { animation: contactItemEnter .8s .28s both; }
+#page.contact-animate #cf > label { opacity: 0; animation: contactItemEnter .65s ease-out both; }
+#page.contact-animate #cf > label:nth-child(1) { animation-delay: .38s; }
+#page.contact-animate #cf > label:nth-child(2) { animation-delay: .52s; }
+#page.contact-animate #cf > label:nth-child(3) { animation-delay: .66s; }
+#page.contact-animate #cf > label:nth-child(4) { animation-delay: .80s; }
+#page.contact-animate #cf .fbtn { animation: contactItemEnter .65s 1s both; transition: transform .2s, box-shadow .2s; }
+#page.contact-animate #cf .fbtn:hover { transform: translateY(-3px); box-shadow: 0 7px 16px rgba(0,0,0,.18); }
+@media (prefers-reduced-motion: reduce) {
+  header .logo, header .logo img, #page.contact-animate .pt,
+  #page.contact-animate > p, #page.contact-animate #cf,
+  #page.contact-animate #cf > label, #page.contact-animate #cf .fbtn {
+    animation: none !important; opacity: 1 !important; transform: none !important; filter: none !important; clip-path: none !important;
+  }
+}
+</style>
+
+<style id="unified-site-animation">
+/* 全ページ共通アニメーション：同じ動き・同じ速度で統一 */
+@keyframes takasugiPageEnter {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes takasugiBrandEnter {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+/* ページ本文は表示されたタイミングで一度だけふわっと登場 */
+main#page:not([hidden]) {
+  animation: takasugiPageEnter .7s ease-out both !important;
+}
+/* 校名・ロゴも全ページで同じ動き */
+body > header .logo {
+  animation: takasugiBrandEnter .7s ease-out both !important;
+}
+body > header .logo img { animation: none !important; }
+/* お問い合わせだけ別の演出にならないよう、旧個別演出を無効化 */
+#page.contact-animate .pt,
+#page.contact-animate > p,
+#page.contact-animate #cf,
+#page.contact-animate #cf > label,
+#page.contact-animate #cf .fbtn,
+#page:has(#cf) > *,
+#page:has(#cf) form#cf > label,
+#page:has(#cf) form#cf .fbtn {
+  animation: none !important;
+  opacity: 1 !important;
+  transform: none !important;
+  clip-path: none !important;
+}
+#page.contact-animate #cf .fbtn:hover,
+#page:has(#cf) form#cf .fbtn:hover {
+  transform: translateY(-2px) !important;
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+@media (prefers-reduced-motion: reduce) {
+  main#page:not([hidden]), body > header .logo { animation: none !important; opacity: 1 !important; transform: none !important; }
+}
+</style>
+
+
+<style id="body-animation-disabled">
+/* 本文は静止表示。校名・ロゴなどヘッダーの演出は維持する */
+main#page, #page, #page *, main#page::before, main#page::after {
+  animation: none !important;
+  opacity: 1 !important;
+  transform: none !important;
+  filter: none !important;
+  clip-path: none !important;
+}
+/* 本文内のホバー操作は見た目の反応として維持 */
+#page a, #page button, #page input, #page textarea, #page select {
+  transition: none !important;
+}
+/* ヘッダーの校名・ロゴのアニメーションは維持 */
+header .logo, header .logo img, body > header .logo {
+  animation: schoolBrandEnter 1.15s cubic-bezier(.2,.75,.25,1) both !important;
+  opacity: 1;
+}
+@media (prefers-reduced-motion: reduce) {
+  header .logo, header .logo img { animation: none !important; }
+}
+</style>
+
+
+<style id="simultaneous-header-animation">
+/* ヘッダー内の校章・校名・補助リンク・ナビを同じタイミングで一緒に表示 */
+@keyframes takasugiHeaderTogether {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+body > header .logo,
+body > header .sub,
+body > nav {
+  animation: takasugiHeaderTogether .9s cubic-bezier(.2,.75,.25,1) .12s both !important;
+}
+body > header .logo img { animation: none !important; opacity: 1 !important; transform: none !important; }
+@media (prefers-reduced-motion: reduce) {
+  body > header .logo, body > header .sub, body > nav { animation: none !important; opacity: 1 !important; transform: none !important; }
+}
+</style>
+
+
+<style id="homepage-header-animation-only">
+/* トップページ：ヘッダーだけを同時にアニメーション */
+html, body { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+/* ローディング画面のアニメーションは停止対象から除外 */
+body > :not(#loader), body > :not(#loader) * { animation: none !important; transition: none !important; }
+@keyframes homepageHeaderTogether { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+body > header .logo, body > header .sub, body > nav { animation: homepageHeaderTogether .9s cubic-bezier(.2,.75,.25,1) .1s both !important; }
+body > header .logo img { animation: none !important; }
+@media (prefers-reduced-motion: reduce) { body > header .logo, body > header .sub, body > nav { animation: none !important; opacity: 1 !important; transform: none !important; } }
+</style>
+
+<style id="header-animation-home-only">
+/* ヘッダーのアニメーションはトップページ(index.html)だけ */
+body.no-home-animation > header,
+body.no-home-animation > header *,
+body.no-home-animation > nav,
+body.no-home-animation > nav *,
+body.no-home-animation .notice,
+body.no-home-animation .notice * {
+  animation: none !important;
+  opacity: 1 !important;
+  transform: none !important;
+}
+/* トップページ以外ではヘッダー表示時の遅延・動きを発生させない */
+body.no-home-animation > header,
+body.no-home-animation > nav { visibility: visible !important; }
+</style>
+
+<style id="loader-animation-exclusion-fix">
+#loader, #loader * { animation-play-state: running; }
+#loader .ld-panel { will-change: transform; backface-visibility: hidden; }
+#loader .ld-center { will-change: opacity; }
+</style>
+
+<style id="mobile-courtyard-layout-fix">
+@media (max-width: 600px) {
+  #page .nakaniwa-area {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 14px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 14px 0 26px !important;
+    box-sizing: border-box !important;
+  }
+  #page .nakaniwa-area p {
+    width: 100% !important;
+    max-width: none !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    writing-mode: horizontal-tb !important;
+    overflow-wrap: anywhere;
+    line-height: 1.85;
+  }
+  #page .nakaniwa-area img {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    flex: none !important;
+    object-fit: contain !important;
+    margin: 0 auto !important;
+  }
+}
+</style>
+
+
+<style id="mobile-hide-header-during-loader">
+/* スマホではローディング中にヘッダーを表示しない */
+@media screen and (max-width: 768px) {
+  body.loading > header,
+  body.loading header.site-header {
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+  }
+}
+</style>
+<style id="btn-fancy">
+/* ===== 「学校を知る」ボタン：四角・少しおしゃれ版 ===== */
+.copy a.btn{
+  position:relative;
+  display:inline-flex;
+  align-items:center;
+  gap:18px;
+  padding:13px 26px 13px 32px;
+  font-size:14px;
+  font-weight:700;
+  letter-spacing:.2em;
+  color:#fff;
+  background:linear-gradient(135deg,#2a9d68,#1a7a50);
+  border:1px solid rgba(255,255,255,.85);
+  border-radius:0;
+  box-shadow:0 6px 16px rgba(10,40,25,.25);
+  text-shadow:none;
+  transition:transform .3s cubic-bezier(.2,.8,.2,1),box-shadow .3s,background .3s;
+}
+/* 少しずらした白い枠線 */
+.copy a.btn::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  border:1px solid rgba(255,255,255,.7);
+  transform:translate(5px,5px);
+  z-index:-1;
+  transition:transform .3s cubic-bezier(.2,.8,.2,1);
+}
+.copy a.btn:hover{
+  transform:translate(-2px,-2px);
+  background:linear-gradient(135deg,#31ab74,#17724a);
+  box-shadow:0 10px 22px rgba(10,40,25,.3);
+}
+.copy a.btn:hover::before{transform:translate(7px,7px)}
+.copy a.btn:focus-visible{outline:3px solid #f2b824;outline-offset:6px}
+/* 矢印：細い線＋先端 */
+.copy a.btn .arrow{
+  display:inline-block !important;
+  position:relative !important;
+  right:auto !important;
+  width:26px !important;height:1.5px !important;
+  margin:0 !important;
+  border:0 !important;
+  background:currentColor;
+  box-shadow:none;
+  transform:none !important;
+  transition:width .3s cubic-bezier(.2,.8,.2,1) !important;
+}
+.copy a.btn .arrow::after{
+  content:"";
+  position:absolute;
+  right:0;top:50%;
+  width:7px;height:7px;
+  border-top:1.5px solid currentColor;
+  border-right:1.5px solid currentColor;
+  transform:translateY(-50%) rotate(45deg);
+  transform-origin:center;
+}
+.copy a.btn:hover .arrow{width:38px !important}
+@media(max-width:700px){
+  .copy a.btn{font-size:13px;padding:11px 20px 11px 24px;gap:14px;letter-spacing:.16em}
+  .copy a.btn .arrow{width:20px !important}
+  .copy a.btn:hover .arrow{width:28px !important}
+}
+@media(prefers-reduced-motion:reduce){
+  .copy a.btn,.copy a.btn::before,.copy a.btn .arrow{transition:none !important}
+}
+</style>
+<style id="loader-video-timing">
+/* ===== ローディング：動画のタイミングに合わせた調整 ===== */
+#loader .ld-line{animation:ld-draw .8s ease-out forwards}
+#loader .ld-line:nth-child(2){animation-delay:.1s}
+#loader .ld-line:nth-child(3){animation-delay:.2s}
+#loader .ld-accent{animation:ld-sprout .5s .85s cubic-bezier(.3,1.3,.5,1) forwards}
+#loader .ld-text{animation:ld-fadein .4s .5s ease forwards}
+#loader .ld-sp{animation:ld-out .2s 1.5s ease forwards}
+#loader .ld-emblem{animation:ld-emblem .85s 1.7s cubic-bezier(.2,.8,.2,1) forwards}
+#loader .ld-name{animation:ld-fadein .8s 1.9s ease forwards}
+/* 緑の画面：一瞬で覆って約0.7秒表示し、すばやく抜ける */
+#loader.wipe-in .ld-panel{transition:transform .45s cubic-bezier(.65,0,.35,1)}
+#loader.wipe-out .ld-panel{transition:transform .45s cubic-bezier(.65,0,.35,1)}
+/* 緑の画面を校章・校名の上にかぶせる */
+#loader .ld-panel{z-index:2}
+#loader.wipe-out .ld-center{opacity:0}
+</style>
+<style id="footer-copy-note">
+/* ===== フッター：著作権に関する注意書き ===== */
+footer .copy-note{
+  margin:0;
+  font-size:11.5px;
+  line-height:1.7;
+  letter-spacing:.04em;
+  color:#fff;
+  opacity:.92;
+}
+@media(min-width:1001px){
+  footer{height:auto;min-height:76px;flex-wrap:wrap;padding-top:16px;padding-bottom:14px;row-gap:10px}
+  footer .copy-note{
+    flex:0 0 100%;
+    padding-top:10px;
+    border-top:1px solid rgba(255,255,255,.35);
+  }
+}
+@media(max-width:1000px){
+  footer .copy-note{align-self:stretch;padding-top:10px;padding-right:64px;border-top:1px solid rgba(255,255,255,.35)}
+}
+</style>
+<style id="final-animation-rules">
+/* ===== アニメーションの最終ルール（他の指定より優先） =====
+   トップページ：ヘッダー（校名・補助リンク・メニュー）がローディング後にふわっと出現
+   そのほかのページ：アニメーションなし */
+@keyframes homeHeaderIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+
+/* --- トップページ --- */
+html.hdr-wait:not(#_a) body.home-page > header .logo,
+html.hdr-wait:not(#_a) body.home-page > header .sub,
+html.hdr-wait:not(#_a) body.home-page > nav{opacity:0 !important}
+html.hdr-play:not(#_a) body.home-page > header .logo,
+html.hdr-play:not(#_a) body.home-page > header .sub,
+html.hdr-play:not(#_a) body.home-page > nav{
+  animation:homeHeaderIn .9s cubic-bezier(.2,.75,.25,1) .05s both !important;
+}
+@media (prefers-reduced-motion:reduce){
+  html:not(#_a) body.home-page > header .logo,
+  html:not(#_a) body.home-page > header .sub,
+  html:not(#_a) body.home-page > nav{animation:none !important;opacity:1 !important;transform:none !important}
+}
+
+/* --- トップページ以外：アニメーションなし --- */
+html:not(#_a) body.no-home-animation,
+html:not(#_a) body.no-home-animation *,
+html:not(#_a) body.no-home-animation *::before,
+html:not(#_a) body.no-home-animation *::after{
+  animation:none !important;
+  transition:none !important;
+  scroll-behavior:auto !important;
+}
+html:not(#_a) body.no-home-animation > header .logo,
+html:not(#_a) body.no-home-animation > header .sub,
+html:not(#_a) body.no-home-animation > nav,
+html:not(#_a) body.no-home-animation main#page{opacity:1 !important;transform:none !important}
 </style>
 </head>
-<body class="loading">
+<body class="loading home-page">
 
 <div id="loader" role="status" aria-label="読み込み中">
   <div class="ld-center">
@@ -1315,60 +2203,142 @@ body{min-height:100dvh}
     <p class="ld-text">LOADING<span>.</span><span>.</span><span>.</span></p>
   </div>
   <div class="ld-panel"></div>
-</div><noscript><style>#loader{display:none!important}</style></noscript>
+</div><noscript><style>#loader{display:none!important}
+/* ===== 学校生活メニューと学校生活の写真エリアの背景色 ===== */
+nav .school-life-menu > a {
+  background: #e7f3e9 !important;
+  color: #1e6b47 !important;
+  border-radius: 5px;
+}
+nav .school-life-menu > a:hover,
+nav .school-life-menu > a:focus {
+  background: #d6eadb !important;
+}
+.sec > div:first-child {
+  background: #eef7f0;
+  border: 1px solid #d3e6d8;
+  border-radius: 8px;
+  padding: 18px;
+}
+.sec > div:first-child .cards {
+  background: transparent;
+}
+@media (max-width: 768px) {
+  nav .school-life-menu > a {
+    background: #e7f3e9 !important;
+  }
+  .sec > div:first-child {
+    padding: 12px;
+    margin-bottom: 16px;
+  }
+}
+/* スマホ版のみ：淡いミントグリーンの背景 */
+@media screen and (max-width: 768px) {
+
+  .school-life-background {
+    background: #e0f3ef !important;
+    padding: 55px 15px !important;
+    margin-top: 30px !important;
+    margin-bottom: 30px !important;
+    border-radius: 0 !important;
+  }
+
+  .school-life-background h2 {
+    text-align: center;
+    margin-bottom: 30px;
+  }
+
+  .school-life-background img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 6px;
+  }
+
+}
+/* スマホ版のみ：淡いミントグリーンの背景 */
+@media screen and (max-width: 768px) {
+
+  .school-life-background {
+    background: #e0f3ef !important;
+    padding: 55px 15px !important;
+    margin-top: 30px !important;
+    margin-bottom: 30px !important;
+    border-radius: 0 !important;
+  }
+
+  .school-life-background h2 {
+    text-align: center;
+    margin-bottom: 30px;
+  }
+
+  .school-life-background img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 6px;
+  }
+
+}
+</style>
+</noscript>
 <svg width="0" height="0" style="position:absolute"><defs>
 <symbol id="lg" viewBox="0 0 76 50"><g fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 30c12-2 24 0 34 8 10-8 22-10 34-8v14c-12-2-24 0-34 6-10-6-22-8-34-6z"/><path d="M38 38V20"/></g><path d="M38 20c-2-9-9-12-16-11 1 8 7 12 16 11zM38 20c2-9 9-14 17-12-1 9-8 13-17 12z" fill="#2e9b62"/></symbol>
 </defs></svg>
 
 <header>
-<a class="logo" href="#home">
-<img src="logo.png" alt="校章">
-  名古屋市立高杉中学校
-</a>  <div class="sub"><a href="#">アクセス</a><a href="#">お問い合わせ</a>
-  <button class="search" aria-label="検索"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#fff" stroke-width="2"><circle cx="7" cy="7" r="5"/><path d="M11 11l4 4"/></svg></button></div>
-</header>
-<nav>
-<button class="nav-toggle"
-        aria-label="メニューを開く"
-        aria-expanded="false">
-    
-</button>  <a class="on" href="#home">トップページ</a>
-  <div class="nav-dropdown">
-    <a href="#" onclick="return false;">学校案内</a>
-    <div class="nav-dropdown-menu">
-      <a href="#about">学校紹介</a>
-      <a href="./pdf/入学のしおり(R8年度用).pdf" target="_blank">
-  入学のしおり
-</a>
-      <a href="./pdf/hyouka.pdf" target="_blank">
-  学校評価
-</a>
+    <a class="logo" href="index.html">
+        <img src="logo.png" alt="校章">
+        名古屋市立高杉中学校
+    </a>
 
+    <div class="sub">
+        <a href="#">アクセス</a>
+        <a href="#">お問い合わせ</a>
+
+        <button class="nav-toggle"
+                aria-label="メニュー"
+                aria-expanded="false">
+            <span></span>
+            <span></span>
+            <span></span>
+            <b>メニュー</b>
+        </button>
+    </div>
+</header>
+
+<nav aria-label="メインメニュー">
+  <a class="on" href="index.html">トップページ</a>
+  <div class="nav-dropdown">
+    <a href="#" aria-haspopup="true" aria-expanded="false">学校案内</a>
+    <div class="nav-dropdown-menu">
+      <a href="about.html">学校紹介</a>
+      <a href="./pdf/入学のしおり(R8年度用).pdf" target="_blank" rel="noopener">入学のしおり</a>
+      <a href="./pdf/hyouka.pdf" target="_blank" rel="noopener">学校評価</a>
     </div>
   </div>
-  <a href="#goals">教育目標</a>
-  <a href="#events">行事予定</a>
-  <a href="#letters">お便り</a>
-<div class="nav-dropdown">
-  <a href="#" onclick="return false;">学校生活</a>
+  <a href="goals.html">教育目標</a>
+  <a href="events.html">行事予定</a>
+  <a href="letters.html">お便り</a>
+<div class="nav-dropdown school-life-menu">
+  <a href="#" aria-haspopup="true" aria-expanded="false">学校生活</a>
   <div class="nav-dropdown-menu">
-    <a href="#life">学校生活</a>
-    <a href="#club">部活動</a>
+    <a href="life.html">学校生活</a>
+    <a href="club.html">部活動</a>
   </div>
-</div>  <a href="#bullying">いじめ防止基本方針</a>
+</div>  <a href="bullying.html">いじめ防止基本方針</a>
 
 
   <!-- ↓ 余分な <div class="nav-dropdown"> を削除 -->
   <div class="nav-dropdown">
-    <a href="#news">お知らせ</a>
+    <a href="#" aria-haspopup="true" aria-expanded="false">お知らせ</a>
     <div class="nav-dropdown-menu">
-      <a href="#news">お知らせ</a>
-      <a href="#emergency">緊急時の対応</a>
+      <a href="news.html">お知らせ</a>
+      <a href="important.html">大事なお知らせ</a>
+      <a href="emergency.html">緊急時の対応</a>
     </div>
   </div>
 
-  <a class="nav-sp" href="#access">アクセス</a>
-  <a class="nav-sp" href="#contact">お問い合わせ</a>
+  <a class="nav-sp" href="access.html">アクセス</a>
+  <a class="nav-sp" href="contact.html">お問い合わせ</a>
 </nav>
 <div id="home"><section class="hero">
   <div class="scene"><div class="bld"></div></div>
@@ -1384,12 +2354,12 @@ body{min-height:100dvh}
   <div class="notice">
     <div class="tag"><svg width="26" height="22" viewBox="0 0 26 22" fill="var(--navy)"><path d="M2 8h6l10-6v18L8 14H2zM20 6c3 2 3 8 0 10z"/></svg>重要なお知らせ</div>
     <div class="msg">・3年学年閉鎖について</div>
-    <a class="more" href="#">詳しく見る<i class="arrow"></i></a>
+    <a class="more" href="important.html">詳しく見る<i class="arrow"></i></a>
   </div>
 
   <div class="panels">
     <div class="panel reveal"><header><h2><em>NEWS</em>お知らせ</h2><a href="#">一覧を見る<i class="arrow"></i></a></header>
-    <li><time>2024.04.01</time>スクールランチメニューについて</li></div>
+    <ul><li><time>2024.04.01</time>スクールランチメニューについて</li></ul></div>
 <div class="panel ev reveal"><header><h2><em>Events</em>今月の行事予定</h2><a href="#">一覧を見る<i class="arrow"></i></a></header>
   <ul>
     <li><time>11月06日（金）</time>音楽会</li>
@@ -1412,7 +2382,7 @@ body{min-height:100dvh}
     <div>
       <div class="ttl reveal"><h3>ABOUT</h3><span>学校紹介</span><hr><a href="#">学校紹介を見る<i class="arrow"></i></a></div>
       <div class="about reveal"><div class="ph"></div>
-        <div><p>名古屋市立高杉中学校は、一人ひとりに応じた学びを実現し、努力や成長を認めることで、達成感や自己肯定感を育むことを目指しています。</p><a class="pill" href="#about">学校紹介　を見る<i class="arrow"></i></a></div></div>
+        <div><p>名古屋市立高杉中学校は、一人ひとりに応じた学びを実現し、努力や成長を認めることで、達成感や自己肯定感を育むことを目指しています。</p><a class="pill" href="about.html">学校紹介　を見る<i class="arrow"></i></a></div></div>
     </div>
   </div>
 
@@ -1427,13 +2397,11 @@ body{min-height:100dvh}
 </div><main id="page" class="wrap" hidden></main>
 <div class="ov" id="ov"><div class="sbox"><input id="q" type="search" placeholder="キーワードを入力（例：遠足、部活動、いじめ）" aria-label="サイト内検索"><ul id="res" class="list" style="border:0"></ul></div></div>
 <footer>
-<div class="fl">
-  <img src="logo.png" alt="学校ロゴ">
-  名古屋市立高杉中学校
-</div>  <address>〒454-0936　愛知県名古屋市中川区高杉町133番地<br>TEL：052-352-0281<br>FAX：052-352-9342
+  <address>〒454-0936　愛知県名古屋市中川区高杉町133番地<br>TEL：052-352-0281<br>FAX：052-352-9342
 </address>
   <div class="links"><a href="#">アクセス</a><a href="#">サイトマップ</a><a href="#">プライバシーポリシー</a></div>
-  <button class="top" aria-label="ページ上部へ" onclick="scrollTo({top:0})"><i class="arrow"></i></button>
+  <button class="top" id="back-to-top" type="button" aria-label="ページ上部へ戻る" title="ページ上部へ戻る"><i class="arrow" aria-hidden="true"></i></button>
+  <p class="copy-note">※このサイトに掲載されている一切の記事、写真画像の無断複製、転載を禁じます。</p>
 </footer>
 
 <script>
@@ -1536,7 +2504,7 @@ return '<div class="life-gallery">'
 + '<section class="life-documents">'
 + '<p class="life-count">全 3 件</p>'
 + '<table class="pdf-table life-pdf-table">'
-+ '<thead><tr><th>タイトル</th><th>公開日</th></tr></thead><tbody>'
++ '<thead><tr><th>タイトル</th></tr></thead><tbody>'
 + '<tr><td><span class="pdf-icon">▣</span><a href="./pdf/キャリア教育全体計画.pdf" target="_blank">キャリア教育全体計画 ［ pdf 1 MB ］</a></td><td>2026/04/28</td></tr>'
 + '<tr><td><span class="pdf-icon">▣</span><a href="./pdf/令和8年度総合的な学習の時間全体計画.pdf" target="_blank">令和8年度総合的な学習の時間全体計画 ［ pdf 178 KB ］</a></td><td>2026/04/28</td></tr>'
 + '<tr><td><span class="pdf-icon">▣</span><a href="./pdf/週 間 課 程.pdf" target="_blank">週間課程 ［ pdf 92 KB ］</a></td><td>2024/04/01</td></tr>'
@@ -1582,7 +2550,7 @@ events:['行事予定',function(){
 bullying:['いじめ防止基本方針',function(){
   return '<p>全 2 件</p>'
   + '<table class="pdf-table">'
-  + '<thead><tr><th>タイトル</th><th>公開日</th></tr></thead><tbody>'
+  + '<thead><tr><th>タイトル</th></tr></thead><tbody>'
   + '<tr><td><span class="pdf-icon">▣</span><a href="./pdf/いじめ防止基本方針.pdf" target="_blank">いじめ防止基本方針 ［ pdf 150 KB ］</a></td></tr>'
   + '</tbody></table>';
 }],
@@ -1624,6 +2592,7 @@ return sec('南海トラフ地震臨時情報発表時、暴風等の警報発�
   +   '<li>高杉中学校からのメール配信（「なごやっ子あんしんメール」）</li>'
   + '</ul>';
 }],
+important:['大事なお知らせ',function(){return '<section class="important-page"><p>学校からの重要な連絡を掲載します。内容をご確認ください。</p><article class="nw-card"><div class="nw-ch"><div class="nw-ct">3年学年閉鎖について</div><time>トップページ掲載のお知らせ</time></div><div class="nw-body"><p>詳細は学校からの配布文書・連絡をご確認ください。</p></div></article></section>'}],
 news:['お知らせ',function(){
   var rows=D.map(function(d){
     return '<tr><td><span class="pdf-icon">▣</span><a href="'+d[3]+'" target="_blank">'+d[0]+' ［ '+d[1]+' ］</a></td><td class="nw-date">'+d[2]+'</td></tr>';
@@ -1637,26 +2606,51 @@ news:['お知らせ',function(){
     +'<table class="nw-table"><thead><tr><th>タイトル</th><th>公開日</th></tr></thead><tbody>'+rows+'</tbody></table></section>'
     +'<section><h3 class="nw-h">ニュース投稿一覧</h3><p class="nw-count">全 '+N.length+' 件</p>'+cards+'</section>'
     +'</div>';
-}],parents:['保護者の方へ',function(){return '<p>保護者の皆さまへのご案内です。</p><div class="g3"><div><b>お便り</b><a href="#letters" style="color:var(--navy)">学校だより・保健だよりを見る</a></div><div><b>連絡・欠席</b>朝8時15分までに学校へお電話ください。</div><div><b>相談</b><a href="#contact" style="color:var(--navy)">お問い合わせフォームへ</a></div></div>'}],
-access:['アクセス',function(){return '<div class="mapb"><i></i></div><table class="t" style="margin-top:16px"><tr><th>住所</th><td>〒454-0936 愛知県名古屋市中川区高杉町133番地</td></tr><tr><th>電話</th><td>052-352-0281</td></tr><tr><th>FAX</th><td>052-352-9342</td></tr</table>'}],
-contact:['お問い合わせ',function(){return '<p>必要事項をご入力ください。</p><form class="f" id="cf" novalidate><label>お名前<input name="n"><span class="err"></span></label><label>メールアドレス<input name="e" type="email"><span class="err"></span></label><label>種別<select><option>学校について</option><option>入学について</option><option>その他</option></select></label><label>お問い合わせ内容<textarea name="m" rows="5"></textarea><span class="err"></span></label><button class="fbtn" type="submit">送信する</button></form>'},function(){$('#cf').onsubmit=function(ev){ev.preventDefault();var f=ev.target,ok=true,c=function(el,t){var s=el.parentNode.querySelector('.err');s.textContent=t?'':'入力してください。';if(!t)ok=false};c(f.n,f.n.value.trim());c(f.e,/^\S+@\S+\.\S+$/.test(f.e.value));c(f.m,f.m.value.trim());if(ok)f.outerHTML='<div class="ok"><b>送信しました。</b><br>内容を確認のうえ、担当よりご連絡します。（デモのため実際には送信されません）</div>'}}],
-sitemap:['サイトマップ',function(){return '<div class="sm">'+['about','goals','events','letters','life','bullying','news','parents','access','contact','privacy'].map(function(k){return '<a href="#'+k+'">'+P[k][0]+'</a><br>'}).join('')+'</div>'}],
+}],parents:['保護者の方へ',function(){return '<p>保護者の皆さまへのご案内です。</p><div class="g3"><div><b>お便り</b><a href="letters.html" style="color:var(--navy)">学校だより・保健だよりを見る</a></div><div><b>連絡・欠席</b>朝8時15分までに学校へお電話ください。</div><div><b>相談</b><a href="contact.html" style="color:var(--navy)">お問い合わせフォームへ</a></div></div>'}],
+access:['アクセス',function(){return '<div class="mapb"><i></i></div><table class="t" style="margin-top:16px"><tr><th>住所</th><td>〒454-0936 愛知県名古屋市中川区高杉町133番地</td></tr><tr><th>電話</th><td>052-352-0281</td></tr><tr><th>FAX</th><td>052-352-9342</td></tr></table>'}],
+contact:['お問い合わせ',function(){return '<p>必要事項をご入力ください。</p><form class="f" id="cf" novalidate><label>お名前<input name="n"><span class="err"></span></label><label>メールアドレス<input name="e" type="email"><span class="err"></span></label><label>種別<select><option>学校について</option><option>入学について</option><option>その他</option></select></label><label>お問い合わせ内容<textarea name="m" rows="5"></textarea><span class="err"></span></label><button class="fbtn" type="submit">送信する</button></form>'},function(){$('#cf').onsubmit=function(ev){ev.preventDefault();var f=ev.target,ok=true,c=function(el,t){var s=el.parentNode.querySelector('.err');s.textContent=t?'':'入力してください。';if(!t)ok=false};c(f.n,f.n.value.trim());c(f.e,/^\S+@\S+\.\S+$/.test(f.e.value));c(f.m,f.m.value.trim());if(ok)f.outerHTML='<div class="ok"><b>入力内容を確認しました。</b><br>このフォームはデモ表示のため、内容は実際には送信されていません。</div>'}}],
+sitemap:['サイトマップ',function(){return '<div class="sm">'+['about','goals','events','letters','life','club','bullying','emergency','news','important','parents','access','contact','privacy'].map(function(k){return '<a href="#'+k+'">'+P[k][0]+'</a><br>'}).join('')+'</div>'}],
 privacy:['プライバシーポリシー',function(){return '<p>本校は、個人情報を適切に取り扱い、保護者・生徒の皆さまの情報を教育活動の目的以外には使用しません。お問い合わせフォームで入力された情報は、回答のためにのみ利用します。</p>'}]};
-var R={'トップページ':'home','学校案内':'about','教育目標':'goals','行事予定':'events','お便り':'letters','学校生活':'life','いじめ防止基本方針':'bullying','お知らせ':'news','保護者の方へ':'parents','アクセス':'access','お問い合わせ':'contact','サイトマップ':'sitemap','プライバシーポリシー':'privacy','詳しく見る':'notice','学校を知る':'about','年間行事予定':'events','学校だより・お便り':'letters','学校生活':'life','部活動':'club','学校行事':'events','学校生活をもっと見る':'life','学校案内を見る':'about','名古屋市立高杉中学校':'home'};
-$$('a[href="#"]').forEach(function(a){var t=a.textContent.trim(),r=R[t];if(t=='一覧を見る')r=a.closest('.ev')?'events':'news';if(r)a.setAttribute('href','#'+r)});
+// スマホでは親項目のタップでプルダウンを開閉する
+document.querySelector('nav').addEventListener('click', function(ev){
+  var parentLink = ev.target.closest('.nav-dropdown > a');
+  if (!parentLink) return;
+  ev.preventDefault();
+  if (window.matchMedia('(max-width: 768px)').matches) {
+    ev.stopPropagation();
+    var item = parentLink.parentElement;
+    var willOpen = !item.classList.contains('open');
+    // 他のプルダウンは閉じてから、選択したものだけ開く
+    document.querySelectorAll('nav .nav-dropdown.open').forEach(function(openItem){
+      if (openItem !== item) {
+        openItem.classList.remove('open');
+        var link = openItem.querySelector(':scope > a');
+        if (link) link.setAttribute('aria-expanded', 'false');
+      }
+    });
+    item.classList.toggle('open', willOpen);
+    parentLink.setAttribute('aria-expanded', String(willOpen));
+  }
+});
+var R={'トップページ':'home','学校案内':'about','教育目標':'goals','行事予定':'events','お便り':'letters','学校生活':'life','いじめ防止基本方針':'bullying','お知らせ':'news','大事なお知らせ':'important','保護者の方へ':'parents','アクセス':'access','お問い合わせ':'contact','サイトマップ':'sitemap','プライバシーポリシー':'privacy','詳しく見る':'news','学校を知る':'about','年間行事予定':'events','学校だより・お便り':'letters','学校生活':'life','部活動':'club','学校行事':'events','学校生活をもっと見る':'life','学校案内を見る':'about','名古屋市立高杉中学校':'home'};
+$$('a[href="#"]').forEach(function(a){
+  if(a.matches('nav .nav-dropdown > a')) return;
+  var t=a.textContent.trim(),r=R[t];
+  if(t=='一覧を見る')r=a.closest('.ev')?'events':'news';
+  if(r)a.setAttribute('href','#'+r);
+});
 $$('.panel:not(.ev) li').forEach(function(li,i){li.style.cursor='pointer';li.onclick=function(){location.hash='news-'+(i+1)}});
 $$('.panel.ev li').forEach(function(li){li.style.cursor='pointer';li.onclick=function(){location.hash='events'}});
-$('.notice .msg').style.cursor='pointer';$('.notice .msg').onclick=function(){location.hash='notice'};
-$('.fl').style.cursor='pointer';$('.fl').onclick=function(){location.hash='home'};
+$('.notice .msg').style.cursor='pointer';$('.notice .msg').onclick=function(){location.hash='important'};
 function go(){
 var h=location.hash.slice(1)||'home',pg=$('#page'),m=/^news-(\d+)$/.exec(h),t,body,after;
 close();
 if(h=='home'||!(P[h]||(m&&N[m[1]-1]))){$('#home').hidden=false;pg.hidden=true;
 if(h!='home'&&h)history.replaceState(null,'','#home');mark('home');return}
-if(m){var n=N[m[1]-1];t='お知らせ';body='<h2 style="margin-top:0">'+n.t+'</h2><p><time>'+n.d+'</time>　'+n.c+'</p><p>'+n.b+'</p><p><a href="#news" style="color:var(--navy);text-decoration:underline">一覧へ戻る</a></p>'}
+if(m){var n=N[m[1]-1];t='お知らせ';body='<h2 style="margin-top:0">'+n.t+'</h2><p><time>'+n.d+'</time>　'+n.c+'</p><p>'+n.b+'</p><p><a href="news.html" style="color:var(--navy);text-decoration:underline">一覧へ戻る</a></p>'}
 else{t=P[h][0];body=P[h][1]();after=P[h][2]}
 $('#home').hidden=true;pg.hidden=false;
-pg.innerHTML='<div class="crumb"><a href="#home">トップページ</a> ＞ '+t+'</div><h1 class="pt">'+t+'</h1>'+body;
+pg.innerHTML='<div class="crumb"><a href="index.html">トップページ</a> ＞ '+t+'</div><h1 class="pt">'+t+'</h1>'+body;
 if(after)after();scrollTo(0,0);document.title=t+' | 名古屋市立高杉中学校';mark(m?'news':h)}
 function mark(h){$$('nav a').forEach(function(a){a.classList.toggle('on',a.getAttribute('href')=='#'+h)})}
 var ov=$('#ov'),q=$('#q'),res=$('#res');
@@ -1664,49 +2658,152 @@ function close(){ov.classList.remove('show')}
 function idx(){var o=[];Object.keys(P).forEach(function(k){var d=document.createElement('div');d.innerHTML=P[k][1]();o.push([k,P[k][0],d.textContent])});N.forEach(function(n,i){o.push(['news-'+(i+1),n.t,n.b])});Object.keys(E).forEach(function(m){E[m].forEach(function(e){o.push(['events',m+'月 '+e[1],e[0]])})});return o}
 var I=null;
 q.oninput=function(){I=I||idx();var v=q.value.trim();if(!v){res.innerHTML='';return}var r=I.filter(function(x){return (x[1]+x[2]).indexOf(v)>-1});res.innerHTML=r.length?r.slice(0,8).map(function(x){var p=x[2].indexOf(v);return '<li><a href="#'+x[0]+'">'+x[1]+'</a><small>'+x[2].slice(Math.max(0,p-12),p+40)+'</small></li>'}).join(''):'<li>該当するページがありません。</li>'};
-$('.search').onclick=function(){ov.classList.add('show');q.value='';res.innerHTML='';q.focus()};
+var searchButton=$('.search');
+if(searchButton){searchButton.onclick=function(){ov.classList.add('show');q.value='';res.innerHTML='';q.focus()};}
 ov.onclick=function(e){if(e.target==ov||e.target.tagName=='A')close()};
 addEventListener('keydown',function(e){if(e.key=='Escape')close()});
 addEventListener('hashchange',go);go();
 })();
 </script>
-<script>
-(function(){
-  var b=document.body,l=document.getElementById('loader');
-  if(!l)return;
-  var seen=false;
-  try{seen=sessionStorage.getItem('ld')==='1';sessionStorage.setItem('ld','1')}catch(e){}
-  if(seen){l.remove();b.classList.remove('loading');return}   /* 2回目以降は省略 */
 
-var start=Date.now(),done=false,MIN=4200;   /* 2800 → 4200 */  function hide(){
-    if(done)return;done=true;
-    setTimeout(function(){
-      l.classList.add('wipe-in');                       /* 緑が左から覆う */
-      setTimeout(function(){
-        l.classList.add('wipe-out');                    /* 右へ抜けてサイトが現れる */
-        b.classList.remove('loading');
-        setTimeout(function(){l.remove()},800);
-      },750);
-    },Math.max(0,MIN-(Date.now()-start)));
-  }
-  window.addEventListener('load',hide);
-  setTimeout(hide,6000);   /* 保険：6秒で必ず進める */
-})();
-</script>
+
 <script>
 document.addEventListener("DOMContentLoaded", function () {
     const nav = document.querySelector("nav");
-    const menuButton = document.querySelector(".nav-toggle");
+    const button = document.querySelector(".nav-toggle");
 
-    if (!nav || !menuButton) return;
+    if (!nav || !button) return;
 
-    menuButton.addEventListener("click", function () {
+    button.addEventListener("click", function () {
         nav.classList.toggle("open");
 
-        const isOpen = nav.classList.contains("open");
-        menuButton.setAttribute("aria-expanded", isOpen);
+        button.setAttribute(
+            "aria-expanded",
+            nav.classList.contains("open")
+        );
     });
 });
+</script>
+
+<script id="back-to-top-function">
+(function () {
+  var button = document.getElementById('back-to-top');
+  if (!button) return;
+  function updateButton() {
+    if (window.scrollY > 240) button.classList.add('is-visible');
+    else button.classList.remove('is-visible');
+  }
+  button.addEventListener('click', function () {
+    try {
+      window.scrollTo({ top: 0, left: 0, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+    } catch (e) { window.scrollTo(0, 0); }
+  });
+  window.addEventListener('scroll', updateButton, { passive: true });
+  window.addEventListener('pageshow', updateButton);
+  updateButton();
+})();
+</script>
+
+<script id="separate-page-navigation">
+(function(){
+ document.addEventListener('click',function(ev){
+  var a=ev.target.closest('a[href^="#"]'); if(!a) return;
+  var h=a.getAttribute('href').slice(1); if(!h) return;
+  var m=/^news-\d+$/.test(h); var key=m?'news':h;
+  var known=['home','about','goals','events','letters','life','club','bullying','emergency','news','important','parents','access','contact','sitemap','privacy'];
+  if(known.indexOf(key)<0) return;
+  ev.preventDefault(); window.location.href=(key==='home'?'index':key)+'.html'+(m?'#'+h:'');
+ });
+})();
+</script>
+
+<script id="reliable-school-contact-animation">
+(function () {
+  function applyContactAnimation() {
+    var page = document.getElementById('page');
+    if (!page) return;
+    if (page.querySelector('#cf')) {
+      page.classList.remove('contact-animate');
+      void page.offsetWidth;
+      page.classList.add('contact-animate');
+    } else {
+      page.classList.remove('contact-animate');
+    }
+  }
+  document.addEventListener('DOMContentLoaded', function () {
+    var page = document.getElementById('page');
+    if (!page) return;
+    new MutationObserver(applyContactAnimation).observe(page, { childList: true, subtree: true });
+    applyContactAnimation();
+  });
+  window.addEventListener('hashchange', function () { setTimeout(applyContactAnimation, 50); });
+})();
+</script>
+
+
+
+<script id="original-style-loader-sequence">
+(function () {
+  var body = document.body;
+  var loader = document.getElementById('loader');
+  if (!loader) { body.classList.remove('loading'); return; }
+  if (document.documentElement.classList.contains('loader-skip')) {
+    document.documentElement.classList.add('hdr-play');
+    body.classList.remove('loading');
+    if (loader.parentNode) loader.parentNode.removeChild(loader);
+    return;
+  }
+  var started = Date.now();
+  var minimumDisplay = 3800;
+  var startedSequence = false;
+  function finish() {
+    if (startedSequence) return;
+    startedSequence = true;
+    var wait = Math.max(0, minimumDisplay - (Date.now() - started));
+    window.setTimeout(function () {
+      if (!loader.parentNode) { body.classList.remove('loading'); return; }
+      loader.classList.add('wipe-in');
+      window.setTimeout(function () {
+        if (!loader.parentNode) { body.classList.remove('loading'); return; }
+        loader.classList.add('wipe-out');
+        document.documentElement.classList.remove('hdr-wait');
+        document.documentElement.classList.add('hdr-play');
+        body.classList.remove('loading');
+        window.setTimeout(function () {
+          if (loader.parentNode) loader.parentNode.removeChild(loader);
+        }, 700);
+      }, 950);
+    }, wait);
+  }
+  body.classList.add('loading');
+  if (document.readyState === 'complete') finish();
+  else window.addEventListener('load', finish, { once: true });
+  window.setTimeout(finish, 7000);
+})();
+</script>
+
+<script id="home-scroll-down">
+/* PC版のみ：トップページで「ロゴ」「トップページ」を押したら、少しだけ下へスクロールする（スマホ版は通常のリンク動作） */
+(function(){
+  if(!document.body.classList.contains('home-page'))return;
+  var STEP=200;   /* 1回で下がる量（px）。変えたいときはこの数字を変更 */
+  function isMobile(){
+    var t=document.querySelector('.nav-toggle');                       /* メニューボタンが表示されている＝スマホ表示 */
+    if(t&&getComputedStyle(t).display!=='none')return true;
+    return !!(window.matchMedia&&window.matchMedia('(max-width: 768px)').matches);
+  }
+  function go(e){
+    var a=e.target&&e.target.closest?e.target.closest('header a.logo, nav a[href="index.html"], nav a[href="#home"]'):null;
+    if(!a)return;
+    if(isMobile())return;                                              /* スマホ版は何もしない */
+    if(e.button||e.metaKey||e.ctrlKey||e.shiftKey||e.altKey)return;   /* 別タブで開く操作はそのまま */
+    e.preventDefault();
+    try{sessionStorage.removeItem('takasugi_internal_nav');}catch(x){}
+    var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    window.scrollBy({top:STEP,behavior:reduce?'auto':'smooth'});
+  }
+  document.addEventListener('click',go);
+})();
 </script>
 </body>
 </html>
